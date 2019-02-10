@@ -3,13 +3,22 @@ import React, { Component } from 'react';
 import './App.css';
 
 class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      data: 6,
+    };
+  }
 
   componentDidMount() {
     axios({
       method: 'GET',
       url: '/hops',
     }).then((response) => {
-      console.log(response.data);
+      const newInt = response.data.count;
+      this.setState({
+        data: newInt,
+      });
     }).catch((error) => {
       console.log(error);
     });
@@ -22,6 +31,7 @@ class App extends Component {
         <header className="App-header">
           <h1>Hop Charts</h1>
         </header>
+        <p>{this.state.data}</p>
       </div>
     );
   }
