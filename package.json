@@ -1,8 +1,11 @@
 {
   "name": "hop-charts-spike",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
+  "proxy": "http://localhost:5000",
   "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
