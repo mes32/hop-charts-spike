@@ -1,27 +1,98 @@
+import axios from 'axios';
 import React, { Component } from 'react';
 import { Bar } from 'react-chartjs-2';
 
 import './Chart.css';
 
-class Chart extends Component {
+class myChart extends Component {
     constructor(props) {
         super(props);
         this.state = {
             chartData: {
-                labels: ['Centennial'],
+                labels: [''],
                 datasets: [
                     {
                         label: 'Alpha Acid',
-                        data: [
-                            100
-                        ],
-                        backgroundColor: [
-                            'rgba(0, 0, 0, 0.2)'
-                        ]
+                        data: [0],
+                        backgroundColor: 'rgba(200, 200, 200, 0.6)',
                     }
-                ]
+                ],
+            }
+        };
+    }
+
+    componentDidMount() {
+        axios({
+            method: 'GET',
+            url: '/hops',
+        }).then((response) => {
+            const hopsArray = response.data;
+            this.props.setHops(hopsArray);
+            const distribution = this.sumPDF(hopsArray);
+            this.setState({
+                chartData: {
+                    labels: distribution.labels,
+                    datasets: [
+                        {
+                            label: 'Alpha Acid',
+                            data: distribution.data,
+                            backgroundColor: 'rgba(200, 200, 200, 0.6)',
+                        }
+                    ],
+                }
+            });
+        }).catch((error) => {
+            console.log(error);
+        });
+    }
+
+    // Compute the sum of the probability density functions (p.d.f.) for all 
+    // hops in the input array (over a given hop compound)
+    sumPDF = (hopsArray) => {
+        const hops = hopsArray.filter(hop => hop.alpha_acid_min && hop.alpha_acid_max);
+        const numIntervals = 200;
+        let maxCompound = 0;
+        for (let hop of hops) {
+            if (hop.alpha_acid_max > maxCompound) {
+                maxCompound = hop.alpha_acid_max;
             }
         }
+        const intervalWidth = maxCompound / numIntervals;
+
+        // For each sample interval compute the sum of all hop p.d.f.
+        // and set the corresponding label
+        let data = new Array(numIntervals);
+        let labels = new Array(numIntervals);
+        for (let i = 0; i < numIntervals; i++) {
+            const x = i * intervalWidth;
+            if (i % 40 === 0) {
+                labels[i] = Number.parseFloat(x).toPrecision(2);
+            } else {
+                labels[i] = '';
+            }
+            data[i] = 0;
+            for (let hop of hops) {
+                const hop_mean = (hop.alpha_acid_min + hop.alpha_acid_max) / 2.0;
+                const hop_stdev = (hop.alpha_acid_max - hop.alpha_acid_min) / 6.0;
+                data[i] += this.normalPDF(x, hop_mean, hop_stdev);
+            }
+        }
+
+        // Normalize sum of probability density functions (p.d.f.) 
+        // to the range 0 to 1
+        const maxDensity = Math.max(...data);
+        data = data.map((hop) => hop / maxDensity);
+        
+        return {
+            labels,
+            data
+        };
+    }
+
+    normalPDF = (x, mean, stdev) => {
+        const coefficient = 1.0 / Math.sqrt(2 * Math.PI * Math.pow(stdev, 2));
+        const exponent = (-1 * Math.pow(x - mean, 2)) / (2 * Math.pow(stdev, 2));
+        return coefficient * Math.exp(exponent);
     }
 
     render() {
@@ -31,9 +102,16 @@ class Chart extends Component {
                     <Bar 
                         data={this.state.chartData}
                         width={100}
-                        height={50}
+                        height={60}
                         options={{
-                            maintainAspectRatio: true
+                            maintainAspectRatio: true,
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            },
                         }}
                     />
                 </div>
@@ -42,4 +120,4 @@ class Chart extends Component {
     }
 }
 
-export default Chart;
+export default myChart;
