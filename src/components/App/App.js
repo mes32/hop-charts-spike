@@ -1,12 +1,14 @@
 import axios from 'axios';
 import React, { Component } from 'react';
+
 import './App.css';
+import Chart from '../Chart/Chart.js';
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      data: 6,
+      hops: [],
     };
   }
 
@@ -15,14 +17,12 @@ class App extends Component {
       method: 'GET',
       url: '/hops',
     }).then((response) => {
-      const hops = response.data;
       this.setState({
-        data: hops[19].variety_name,
+        hops: response.data,
       });
     }).catch((error) => {
       console.log(error);
     });
-    console.log('test');
   }
 
   render() {
@@ -31,7 +31,7 @@ class App extends Component {
         <header className="App-header">
           <h1>Hop Charts</h1>
         </header>
-        <p>{this.state.data}</p>
+        <Chart hops={this.state.hops} />
       </div>
     );
   }
