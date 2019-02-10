@@ -15,9 +15,9 @@ class App extends Component {
       method: 'GET',
       url: '/hops',
     }).then((response) => {
-      const newInt = response.data.count;
+      const hops = response.data;
       this.setState({
-        data: newInt,
+        data: hops[19].variety_name,
       });
     }).catch((error) => {
       console.log(error);

@@ -15,13 +15,3 @@ app.use('/hops', hopsRouter);
 app.listen(port, function () {
     console.log('Listening on port: ', port);
 });
-
-
-
-
-
-
-/** ---------- MIDDLEWARE ---------- **/
-app.use(bodyParser.json()); // needed for angular requests
-app.use(express.static('build'));
-
