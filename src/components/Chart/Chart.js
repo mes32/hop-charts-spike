@@ -4,6 +4,8 @@ import { Bar } from 'react-chartjs-2';
 
 import './Chart.css';
 
+const numIntervals = 200;
+
 class myChart extends Component {
     constructor(props) {
         super(props);
@@ -29,11 +31,24 @@ class myChart extends Component {
             const hopsArray = response.data;
             this.props.setHops(hopsArray);
             const distribution = this.sumPDF(hopsArray);
+            const index = 16;
+            const selected = this.getSelectedData(hopsArray, index);
             this.setState({
                 chartData: {
                     labels: distribution.labels,
                     datasets: [
                         {
+                            label: selected.label,
+                            data: selected.data,
+
+                            // Changes this dataset to become a line
+                            type: 'line',
+                            backgroundColor: 'rgba(200, 200, 200, 0)',
+                            borderColor: 'rgba(100, 100, 250, 1)',
+                            borderWidth: 5,
+                            pointRadius: 0,
+                            pointHoverRadius: 0,
+                        }, {
                             label: 'Alpha Acid',
                             data: distribution.data,
                             backgroundColor: 'rgba(200, 200, 200, 0.6)',
@@ -50,7 +65,6 @@ class myChart extends Component {
     // hops in the input array (over a given hop compound)
     sumPDF = (hopsArray) => {
         const hops = hopsArray.filter(hop => hop.alpha_acid_min && hop.alpha_acid_max);
-        const numIntervals = 200;
         let maxCompound = 0;
         for (let hop of hops) {
             if (hop.alpha_acid_max > maxCompound) {
@@ -65,7 +79,7 @@ class myChart extends Component {
         let labels = new Array(numIntervals);
         for (let i = 0; i < numIntervals; i++) {
             const x = i * intervalWidth;
-            if (i % 40 === 0) {
+            if (i % 20 === 0) {
                 labels[i] = Number.parseFloat(x).toPrecision(2);
             } else {
                 labels[i] = '';
@@ -85,6 +99,37 @@ class myChart extends Component {
         
         return {
             labels,
+            data
+        };
+    }
+
+    getSelectedData = (hopsArray, index) => {
+        const selectedHop = hopsArray[index];
+        const label = selectedHop.variety_name;
+        let data = new Array(numIntervals);
+        data = data.map(x => NaN);
+
+        // TODO: It is pretty ugly to include this functionality this way
+        // !!!!
+        const hops = hopsArray.filter(hop => hop.alpha_acid_min && hop.alpha_acid_max);
+        let maxCompound = 0;
+        for (let hop of hops) {
+            if (hop.alpha_acid_max > maxCompound) {
+                maxCompound = hop.alpha_acid_max;
+            }
+        }
+        const intervalWidth = maxCompound / numIntervals;
+        // !!!!
+
+        for (let i = 0; i < numIntervals; i++) {
+            const x = i * intervalWidth;
+            if (x >= selectedHop.alpha_acid_min && x <= selectedHop.alpha_acid_max) {
+                data[i] = 0.5;
+            }
+        }
+
+        return {
+            label,
             data
         };
     }
