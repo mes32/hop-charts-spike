@@ -155,8 +155,22 @@ class myChart extends Component {
                                     ticks: {
                                         beginAtZero: true
                                     }
+                                }],
+                                xAxes: [{
+                                    barPercentage: 1,
+                                    categoryPercentage: 1,
                                 }]
                             },
+                            tooltips: {
+                                enabled: false,
+                            },
+                            legend: {
+                                display: false,
+                            },
+                            animation: {
+                                duration: 1000,
+                                easing: 'easeOutBounce',
+                            }
                         }}
                     />
                 </div>
